@@ -72,6 +72,9 @@ OaStatWeb3::OaStatWeb3(cppcms::service &srv) : cppcms::application(srv)
 	dispatcher().assign("/datasource/killsbyweapon", &OaStatWeb3::kills_by_weapon_s, this);
 	mapper().assign("killsbyweapon","/datasource/killsbyweapon");
 	
+	dispatcher().assign("/datasource/scoregraph", &OaStatWeb3::scoregraph_data, this);
+	mapper().assign("scoregraph","/datasource/scoregraph");
+	
 	dispatcher().assign("/", &OaStatWeb3::summary, this);
     mapper().assign("/");
 
@@ -87,7 +90,6 @@ OaStatWeb3::OaStatWeb3(cppcms::service &srv) : cppcms::application(srv)
 	CheckConnection();
 	oaweapon = optconverter(new OaWeaponConverter());
 	oagametype = optconverter(new OaGametypeConverter());
-	plot = std::shared_ptr<plotgenerator>(new plotgenerator(sql));
 }
 
 OaStatWeb3::~OaStatWeb3()
@@ -174,7 +176,6 @@ void OaStatWeb3::gamelist(std::string startCount) {
 
 void OaStatWeb3::onegame(std::string gamenumber) {
 	int sgamenumber = atoi(gamenumber.c_str());
-	string media_path = this->settings().get("application.media_path","../media");
 	CheckConnection();
 	ctemplate::TemplateDictionary body_tpl("templates/body.tpl");
 	body_tpl.SetValue("TITLE","Game summary");
@@ -204,9 +205,10 @@ void OaStatWeb3::onegame(std::string gamenumber) {
 	most_kills->SetValue("BODY_ELEMENT",output);
 	most_kills->SetValue("ELEMENT_TITLE","Most kills by weapon");
 	try {
-		plot->gamescoregraph(sgamenumber);
 		stringstream ss;
-		ss << "<img src=\""<< media_path <<"/scoretable" << sgamenumber << ".png\" alt=\"Scoregraph\"/>";
+		ss << "<div id=\"scoregraph\"></div>";
+		ss << "<script src=\"" << static_media << "/oastat_d3charts.js\"></script>";
+		ss << "<script>renderScoreGraph('#scoregraph', '../datasource/scoregraph?gamenumber=" << sgamenumber << "');</script>";
 		ctemplate::TemplateDictionary* score_graph = body_tpl.AddSectionDictionary("BODY_ELEMENT_LIST");
 		score_graph->SetValue("BODY_ELEMENT",ss.str());
 		score_graph->SetValue("ELEMENT_TITLE","Score graph");
@@ -409,6 +411,102 @@ void OaStatWeb3::kills_by_weapon_s() {
 		res >> w;
 		res >> c;
 		response().out() << "{\"id\":\"" << w << "\",\"cell\":[\"" << w << "\",\"" << c << "\"]}";
+	}
+	response().out() << "]}";
+}
+
+void OaStatWeb3::scoregraph_data() {
+	CheckConnection();
+	string get_gamenumber = request().get("gamenumber");
+	if (!get_gamenumber.length()) {
+		response().out() << "{\"players\":[]}";
+		return;
+	}
+	int gamenumber = atoi(get_gamenumber.c_str());
+	cppdb::result res;
+	string name;
+	int score, playerid, second = 0;
+	vector<string> names;
+	vector<int> finalscore;
+	vector<int> currentscore;
+	vector<int> playerids;
+	string playerids_str;
+	finalscore.push_back(1000);
+	currentscore.push_back(0);
+	res = *sql<<"SELECT p.playerid,p.nickname,s.score FROM oastat_games g, oastat_players p, oastat_points s "
+		"WHERE g.gamenumber = s.gamenumber AND p.playerid = s.player and g.gamenumber = ? "
+		"AND s.eventnumber = (select max(maxs.eventnumber) FROM oastat_points maxs where maxs.player = s.player AND maxs.gamenumber = g.gamenumber) "
+		"ORDER BY s.score DESC LIMIT 0,8"<<gamenumber;
+	while (res.next()) {
+		res >> playerid >> name >> score;
+		playerids.push_back(playerid);
+		names.push_back(name);
+		finalscore.push_back(score);
+		currentscore.push_back(0);
+		if (playerids_str.length()) {
+			playerids_str += ",";
+		}
+		playerids_str += to_string(playerid);
+	}
+	if (!playerids_str.length()) {
+		response().out() << "{\"players\":[]}";
+		return;
+	}
+	vector<vector<int>> table;
+	for (size_t i = 0; i < playerids.size() + 1; i++) {
+		vector<int> col;
+		col.push_back(0);
+		table.push_back(col);
+	}
+	string query = "SELECT s.player, s.second, s.score FROM oastat_points s WHERE s.gamenumber = ? AND s.player IN (" + playerids_str + ") ORDER BY SECOND";
+	res = *sql<<query<<gamenumber;
+	while (res.next()) {
+		res >> playerid >> second >> score;
+		if (currentscore[0] == second) {
+			for (size_t i = 0; i < playerids.size() + 1; i++) {
+				table.at(i).pop_back();
+			}
+		}
+		currentscore[0] = second;
+		for (size_t i = 0; i < playerids.size(); i++) {
+			if (playerids.at(i) == playerid) {
+				currentscore.at(i + 1) = score;
+			}
+		}
+		for (size_t i = 0; i < playerids.size() + 1; i++) {
+			table.at(i).push_back(currentscore.at(i));
+		}
+	}
+	if (table.at(0).back() != second) {
+		finalscore[0] = second;
+		for (size_t i = 0; i < playerids.size() + 1; i++) {
+			table.at(i).push_back(finalscore.at(i));
+		}
+	}
+	response().out() << "{\"players\":[";
+	for (size_t i = 0; i < playerids.size(); i++) {
+		if (i > 0) {
+			response().out() << ",";
+		}
+		response().out() << "{\"name\":\"";
+		// JSON-escape the player name
+		for (char c : names.at(i)) {
+			if (c == '"') {
+				response().out() << "\\\"";
+			} else if (c == '\\') {
+				response().out() << "\\\\";
+			} else {
+				response().out() << c;
+			}
+		}
+		response().out() << "\",\"data\":[";
+		for (size_t j = 0; j < table.at(0).size(); j++) {
+			if (j > 0) {
+				response().out() << ",";
+			}
+			response().out() << "[" << table.at(0).at(j) << "," << table.at(i + 1).at(j) << "]";
+		}
+		response().out() << "]}";
 	}
 	response().out() << "]}";
 }

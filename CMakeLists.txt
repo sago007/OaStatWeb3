@@ -13,7 +13,6 @@ add_executable(OaStatWeb3
     src/OutputterBasic.cpp
     src/OutputterCtemplate.cpp
     src/OpenArenaConverters.cpp
-    src/plotgenerator.cpp
 )
 
 target_include_directories(OaStatWeb3 PRIVATE ${Boost_INCLUDE_DIRS})
