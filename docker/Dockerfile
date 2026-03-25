@@ -6,7 +6,7 @@ RUN mkdir -p /opt/oastatweb/
 
 RUN cd /opt/ && wget https://files.poulsander.com/~poul19/public_files/cppcms-1.0.5.tar.bz2 && tar xvfj cppcms-1.0.5.tar.bz2 && mkdir -p cppcms-1.0.5/build && cd cppcms-1.0.5/build && cmake .. && make && make install
 
-RUN cd /opt/oastatweb/ && git clone https://github.com/sago007/OaStatWeb3.git && cd OaStatWeb3 && make && ldconfig && chmod o+w ./media && echo changed
+RUN cd /opt/oastatweb/ && git clone https://github.com/sago007/OaStatWeb3.git && cd OaStatWeb3 && cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build && cp build/OaStatWeb3 . && ldconfig && chmod o+w ./media && echo changed
 
 EXPOSE 27960
 

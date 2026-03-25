@@ -5,3 +5,8 @@
 nbproject
 OaStatWeb3
 !.gitignore
+CMakeCache.txt
+CMakeFiles/
+build/
+*.cmake
+Makefile
