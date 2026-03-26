@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-RUN apt-get update && apt-get install -y libcppdb-dev libctemplate-dev build-essential gnuplot git wget cmake libpcre3-dev zlib1g-dev libgcrypt11-dev libicu-dev python libboost-dev
+RUN apt-get update && apt-get install -y libcppdb-dev libctemplate-dev build-essential git wget cmake libpcre3-dev zlib1g-dev libgcrypt11-dev libicu-dev python libboost-dev
 
 RUN mkdir -p /opt/oastatweb/
 

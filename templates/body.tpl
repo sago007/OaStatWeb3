@@ -2,6 +2,7 @@
 <html>
 <head>
 <title>{{TITLE}} - {{SUBTITLE}}</title>
+<script src="{{STATIC_MEDIA}}/d3.v7.min.js"></script>
 {{META_TAGS}}
 </head>
 <body  bgcolor="silver">

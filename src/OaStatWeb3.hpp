@@ -35,7 +35,6 @@ for the parts of the skin/template used as well as that of the covered work.
 #include <boost/format.hpp>
 #include <cppdb/frontend.h>
 #include "OpenArenaConverters.hpp"
-#include "plotgenerator.hpp"
 
 
 class OaStatWeb3 : public cppcms::application
@@ -50,10 +49,10 @@ public:
 	void mappage(std::string mapname);
 	void gametypepage(std::string gametypeNumber);
 	void kills_by_weapon_s();
+	void scoregraph_data();
 private:
 	unsigned int getNumberOfGames();
 	std::shared_ptr<cppdb::session> sql;
-	std::shared_ptr<plotgenerator> plot;
 	/**
 	 * Checks to see if the connection is still alive. If it is not then reopen the connection.
 	 * This function should be called by all pages in the beginning to ensure that the connection is alive.
