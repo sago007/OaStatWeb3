@@ -141,6 +141,7 @@ void OaStatWeb3::gamelist(std::string startCount) {
 	body_tpl.SetValue("TITLE","Gamelist");
 	body_tpl.SetValue("SUBTITLE","Page");
 	body_tpl.SetValue("ROOTPATH","..");
+	body_tpl.SetValue("STATIC_MEDIA",static_media);
 	int limitStart = atoi(startCount.c_str());
 	cppdb::result res = *sql<<"SELECT g.gamenumber,g.gametype,g.gametype, g.mapname, g.basegame,g.servername,g.time FROM oastat_games g "
 			"WHERE 1 ORDER BY g.time DESC LIMIT ? OFFSET ?"<< limitCount << limitStart;
@@ -181,6 +182,7 @@ void OaStatWeb3::onegame(std::string gamenumber) {
 	body_tpl.SetValue("TITLE","Game summary");
 	body_tpl.SetValue("SUBTITLE","Game - "+gamenumber);
 	body_tpl.SetValue("ROOTPATH","..");
+	body_tpl.SetValue("STATIC_MEDIA",static_media);
 	cppdb::result res = *sql<<"SELECT p.playerid,p.nickname,s.score FROM oastat_games g, oastat_players p, oastat_points s "
 "WHERE  g.gamenumber = s.gamenumber AND p.playerid = s.player and g.gamenumber = ? "
 "AND s.eventnumber = (select max(maxs.eventnumber) FROM oastat_points maxs where maxs.player = s.player AND maxs.gamenumber = g.gamenumber ) "
@@ -230,6 +232,7 @@ void OaStatWeb3::playerpage(std::string playerid) {
 	body_tpl.SetValue("TITLE","Player page");
 	//body_tpl.SetValue("SUBTITLE","Player - "+playerid);
 	body_tpl.SetValue("ROOTPATH","..");
+	body_tpl.SetValue("STATIC_MEDIA",static_media);
 	cppdb::result res = *sql<<"SELECT lastseen,isbot,model,headmodel,nickname FROM oastat_players WHERE playerid = ?"<<sid;
 	if(res.next()) {
 		string lastseen,isbot,model,headmodel;
@@ -286,6 +289,7 @@ void OaStatWeb3::mappage(std::string mapname) {
 	body_tpl.SetValue("TITLE","Map - " + mapname);
 	body_tpl.SetValue("SUBTITLE","Map summary");
 	body_tpl.SetValue("ROOTPATH","..");
+	body_tpl.SetValue("STATIC_MEDIA",static_media);
 	string output2 = "";
 	//Map info start
 	{
@@ -342,6 +346,7 @@ void OaStatWeb3::gametypepage(std::string gametypeNumber) {
 	body_tpl.SetValue("TITLE",oagametype->getValue(gametypeNumber));
 	body_tpl.SetValue("SUBTITLE","Gametype summary");
 	body_tpl.SetValue("ROOTPATH","..");
+	body_tpl.SetValue("STATIC_MEDIA",static_media);
 	string output2 = "";
 	//last 10 matches - start
 	cppdb::result res = *sql<<"SELECT g.gamenumber,g.gametype,g.gametype, g.mapname, g.basegame,g.servername,g.time FROM oastat_games g "
@@ -417,6 +422,7 @@ void OaStatWeb3::kills_by_weapon_s() {
 
 void OaStatWeb3::scoregraph_data() {
 	CheckConnection();
+	response().content_type("application/json");
 	string get_gamenumber = request().get("gamenumber");
 	if (!get_gamenumber.length()) {
 		response().out() << "{\"players\":[]}";
