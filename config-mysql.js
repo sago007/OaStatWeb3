@@ -10,14 +10,7 @@
     "port" : 27960
   },
   "http" : {
-    "script" : "/mb.fcgi",
-    "rewrite" : [
-      { "regex" : "/media(/.*)?", "pattern" : "$0" },
-      { "regex" : "/static(/.*)?", "pattern" : "$0" },
-      { "regex" : "/files/(media|static)(/.*)?", "pattern" : "$0" },
-      { "regex" : "/favicon\\.ico", "pattern" : "$0" },
-      { "regex" : ".*", "pattern" : "/mb.fcgi$0" }
-    ]
+    "script_names" : ["/oastatweb"]
   },
   "file_server" : {
     "enable" : true,
