@@ -223,6 +223,16 @@ void OaStatWeb3::onegame(std::string gamenumber) {
     ctemplate::ExpandTemplate("templates/body.tpl", ctemplate::DO_NOT_STRIP, &body_tpl, &output2);
     response().out() << output2 << endl;
 };
+
+void replaceAll(std::string& str, const std::string& from, const std::string& to) {
+	size_t start_pos = 0;
+	while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+		str.replace(start_pos, from.length(), to);
+		start_pos += to.length();
+	}
+}
+
+
 void OaStatWeb3::playerpage(std::string playerid) {
 	int sid = atoi(playerid.c_str());
 	CheckConnection();
@@ -238,10 +248,14 @@ void OaStatWeb3::playerpage(std::string playerid) {
 		string lastseen,isbot,model,headmodel;
 		res >> lastseen >> isbot >> model >> headmodel >> nickname;
 		ctemplate::TemplateDictionary player_tpl("templates/player.tpl");
+		player_tpl.SetValue("STATIC_MEDIA",static_media);
 		player_tpl.SetValue("lastseen",lastseen);
 		player_tpl.SetValue("isbot",isbot);
 		player_tpl.SetValue("model",model);
 		player_tpl.SetValue("headmodel",headmodel);
+		std::string headmodel_underscore = headmodel;
+		replaceAll(headmodel_underscore, "/", "_");
+		player_tpl.SetValue("headmodel_",headmodel_underscore);
 		player_tpl.SetValue("nickname",nickname);
 		ctemplate::ExpandTemplate("templates/player.tpl", ctemplate::DO_NOT_STRIP, &player_tpl, &output);
 		ctemplate::TemplateDictionary* player_info = body_tpl.AddSectionDictionary("BODY_ELEMENT_LIST");
