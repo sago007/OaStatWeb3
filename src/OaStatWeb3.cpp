@@ -87,7 +87,11 @@ OaStatWeb3::OaStatWeb3(cppcms::service &srv) : cppcms::application(srv)
 	if (env_connection_string) {
 		connection_string = env_connection_string;
 	}
-	CheckConnection();
+	try {
+		CheckConnection();
+	} catch (DatabaseUnavailableException &) {
+		// Database may not be available at startup; each request will retry via CheckConnection().
+	}
 	oaweapon = optconverter(new OaWeaponConverter());
 	oagametype = optconverter(new OaGametypeConverter());
 }
@@ -97,16 +101,38 @@ OaStatWeb3::~OaStatWeb3()
 }
 
 void OaStatWeb3::CheckConnection() {
-	if(!sql) {
-		sql = std::shared_ptr<cppdb::session>(new cppdb::session(connection_string));
-	}
 	try {
-		//Execute some dummy sql:
-		result r = *sql<<"SELECT 'X'";
-		r.next();
+		if(!sql) {
+			sql = std::shared_ptr<cppdb::session>(new cppdb::session(connection_string));
+		}
+		try {
+			//Execute some dummy sql:
+			result r = *sql<<"SELECT 'X'";
+			r.next();
+		} catch ( exception &e ) {
+			//if the dummy sql fails then reconnect
+			sql->open(connection_string);
+		}
 	} catch ( exception &e ) {
-		//if the dummy sql fails then reconnect
-		sql->open(connection_string);
+		cerr << "Database connection failed: " << e.what() << endl;
+		throw DatabaseUnavailableException();
+	}
+}
+
+void OaStatWeb3::sendDatabaseUnavailable() {
+	response().status(503, "Service Unavailable");
+	response().set_header("Content-Type", "text/html; charset=utf-8");
+	ctemplate::TemplateDictionary tpl("templates/error503.tpl");
+	string output;
+	ctemplate::ExpandTemplate("templates/error503.tpl", ctemplate::DO_NOT_STRIP, &tpl, &output);
+	response().out() << output;
+}
+
+void OaStatWeb3::main(std::string url) {
+	try {
+		cppcms::application::main(url);
+	} catch ( DatabaseUnavailableException & ) {
+		sendDatabaseUnavailable();
 	}
 }
 

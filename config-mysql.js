@@ -1,7 +1,7 @@
 {
   "application" : {
     // user specific data
-    "connection_string" : "mysql:database=oastat;user=testuser;password='password'",
+    "connection_string" : "mysql:database=oastat;user=testuser;password=password",
     "media_path" : "/media",
     "static_media" : "/static"
   },

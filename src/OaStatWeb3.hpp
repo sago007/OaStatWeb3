@@ -36,12 +36,18 @@ for the parts of the skin/template used as well as that of the covered work.
 #include <cppdb/frontend.h>
 #include "OpenArenaConverters.hpp"
 
+struct DatabaseUnavailableException : public std::exception {
+	const char* what() const noexcept override {
+		return "Database currently unavailable";
+	}
+};
 
 class OaStatWeb3 : public cppcms::application
 {
 public:
 	OaStatWeb3(cppcms::service &srv);
 	virtual ~OaStatWeb3();
+	void main(std::string url) override;
 	void summary();
 	void gamelist(std::string startCount);
 	void onegame(std::string gamenumber);
@@ -59,6 +65,7 @@ private:
 	 * This is easy to overlook during testing. 
      */
 	void CheckConnection();
+	void sendDatabaseUnavailable();
 	optconverter oaweapon;
 	optconverter oagametype;
 	std::string connection_string;
