@@ -1,17 +1,35 @@
-FROM ubuntu:16.04
+FROM ubuntu:26.04
 
-RUN apt-get update && apt-get install -y libcppdb-dev libctemplate-dev build-essential git wget cmake libpcre3-dev zlib1g-dev libgcrypt11-dev libicu-dev python libboost-dev
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN mkdir -p /opt/oastatweb/
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    libboost-dev \
+    libcppdb-dev \
+    libctemplate-dev \
+    python3 \
+    zlib1g-dev
 
-RUN cd /opt/ && wget https://files.poulsander.com/~poul19/public_files/cppcms-1.0.5.tar.bz2 && tar xvfj cppcms-1.0.5.tar.bz2 && mkdir -p cppcms-1.0.5/build && cd cppcms-1.0.5/build && cmake .. && make && make install
+RUN git clone https://github.com/artyom-beilis/cppcms.git /opt/cppcms && \
+    git -C /opt/cppcms checkout cfaf96eb79e50c1cfe2fde448cbedb784be9ea8f && \
+    cmake -B /opt/cppcms/build /opt/cppcms && \
+    cmake --build /opt/cppcms/build -j$(nproc) && \
+    cmake --install /opt/cppcms/build && \
+    ldconfig && \
+    rm -rf /opt/cppcms
 
-RUN cd /opt/oastatweb/ && git clone https://github.com/sago007/OaStatWeb3.git && cd OaStatWeb3 && cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build && cp build/OaStatWeb3 . && ldconfig && chmod o+w ./media && echo changed
+WORKDIR /opt/oastatweb/OaStatWeb3
+
+COPY . .
+
+RUN cmake -B build -DCMAKE_BUILD_TYPE=Release && \
+    cmake --build build -j$(nproc) && \
+    cp build/OaStatWeb3 .
 
 EXPOSE 27960
 
 USER nobody
 
-WORKDIR /opt/oastatweb/OaStatWeb3
-
-CMD ./OaStatWeb3 -c docker/config-docker.js
+CMD ["./OaStatWeb3", "-c", "docker/config-docker.js"]
