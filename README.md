@@ -25,4 +25,15 @@ docker run --rm \
     -e OASTATWEB3CONNECTIONSTRING="mysql:host=host.docker.internal;port=3306;database=oastat;user=root;password=password" \
     oastatweb3
 ```
-Thos will make the instance visible on http://localhost:27960/
+This will make the instance visible on http://localhost:27960/
+
+To serve the application at a subpath (e.g. `/oastatweb/`), set the `OASTATWEB3_BASE_PATH` environment variable:
+```
+docker run --rm \
+    --add-host=host.docker.internal:host-gateway \
+    -p 27960:27960 \
+    -e OASTATWEB3CONNECTIONSTRING="mysql:host=host.docker.internal;port=3306;database=oastat;user=root;password=password" \
+    -e OASTATWEB3_BASE_PATH="/oastatweb" \
+    oastatweb3
+```
+This will make the instance visible on http://localhost:27960/oastatweb/

@@ -32,4 +32,4 @@ EXPOSE 27960
 
 USER nobody
 
-CMD ["./OaStatWeb3", "-c", "docker/config-docker.js"]
+ENTRYPOINT ["./docker/entrypoint.sh"]

@@ -78,7 +78,13 @@ OaStatWeb3::OaStatWeb3(cppcms::service &srv) : cppcms::application(srv)
 	dispatcher().assign("/", &OaStatWeb3::summary, this);
     mapper().assign("/");
 
-    mapper().root("/oastatweb");
+    //It has become popular to give settings using environments
+	std::string root_path = this->settings().get("application.root_path","/oastatweb");
+	const char* env_base_path = getenv("OASTATWEB3_BASE_PATH");
+	if (env_base_path) {
+		root_path = env_base_path;
+	}
+	mapper().root(root_path);
 	
 	static_media = this->settings().get("application.static_media","../static_media");
 	connection_string = this->settings().get("application.connection_string","mysql:database=oastat");
