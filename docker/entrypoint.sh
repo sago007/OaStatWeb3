@@ -12,8 +12,8 @@ cat > /tmp/config-runtime.js <<EOF
 {
    "application" : {
       "connection_string" : "mysql:database=oastat;user=testuser;password=password",
-      "media_path" : "../media",
-      "static_media" : "${BASE_PATH}/files/static",
+      "media_path" : "/media",
+      "static_media" : "/static",
       "root_path" : "${BASE_PATH}"
    },
     "service" : {
@@ -28,8 +28,10 @@ cat > /tmp/config-runtime.js <<EOF
         "enable": true,
         "document_root" : ".",
         "alias" : [
-            { "url" : "${BASE_PATH}/files/media" , "path" : "./media" },
-            { "url" : "${BASE_PATH}/files/static/" ,"path" : "./static_media"}
+            { "url" : "${BASE_PATH}/media/" , "path" : "./media/" },
+            { "url" : "${BASE_PATH}/static/" ,"path" : "./static_media/" },
+            { "url" : "/media/" , "path" : "./media/" },
+            { "url" : "/static/" ,"path" : "./static_media/" }
         ]
     }
 }

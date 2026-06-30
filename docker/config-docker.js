@@ -2,8 +2,8 @@
    "application" : {
       // user specific data
       "connection_string" : "mysql:database=oastat;user=testuser;password=password",
-      "media_path" : "../media",
-      "static_media" : "../static"
+      "media_path" : "/media",
+      "static_media" : "/static"
    },
     "service" : {
           "ip"  : "0.0.0.0",
@@ -20,10 +20,10 @@
 }  ,
     "file_server" : {
         "enable": true,
-	"document_root" : ".",
-	"alias" : [
-    		{ "url" : "/files/media" , "path" : "./media" },
-		{ "url" : "/files/static/" ,"path" : "./static_media"},
-  	],
+        "document_root" : ".",
+        "alias" : [
+            { "url" : "/media/" , "path" : "./media/" },
+            { "url" : "/static/" ,"path" : "./static_media/" }
+        ]
     }
 }

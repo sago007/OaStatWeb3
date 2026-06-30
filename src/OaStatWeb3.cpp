@@ -92,8 +92,13 @@ OaStatWeb3::OaStatWeb3(cppcms::service &srv) : cppcms::application(srv)
 	base_href = root_path;
 	if (base_href.length() == 0 || base_href == "/") {
 		base_href = "/";
-	} else if (base_href.back() != '/') {
-		base_href += "/";
+	} else {
+		if (base_href[0] != '/') {
+			base_href = "/" + base_href;
+		}
+		if (base_href.back() != '/') {
+			base_href += "/";
+		}
 	}
 
 	static_media = this->settings().get("application.static_media","../static_media");
@@ -437,6 +442,8 @@ unsigned int OaStatWeb3::getNumberOfGames() {
 }
 
 void OaStatWeb3::kills_by_weapon_s() {
+	CheckConnection();
+	response().content_type("application/json");
 	unsigned int gamenumber = 0;
 	string sord = "DESC";
 	//request().
@@ -453,12 +460,13 @@ void OaStatWeb3::kills_by_weapon_s() {
 	if (get_sidx.length()) {
 		sidx = stoul(get_sidx);
 	}
+	string order_by = (sidx == 1) ? "w" : "c";
 	cppdb::result res;
 	if (gamenumber == 0) {
-		res = *sql<<"SELECT CASE k.MODTYPE WHEN 5 THEN 4 WHEN 7 THEN 6 WHEN 9 THEN 8 WHEN 13 THEN 12 ELSE k.MODTYPE END AS w,COUNT(0) AS c FROM oastat_kills k GROUP BY w ORDER BY ? "+sord<<sidx;
+		res = *sql<<"SELECT CASE k.MODTYPE WHEN 5 THEN 4 WHEN 7 THEN 6 WHEN 9 THEN 8 WHEN 13 THEN 12 ELSE k.MODTYPE END AS w,COUNT(0) AS c FROM oastat_kills k GROUP BY w ORDER BY " + order_by + " " + sord;
 	}
 	else {
-		res = *sql<<"SELECT CASE k.MODTYPE WHEN 5 THEN 4 WHEN 7 THEN 6 WHEN 9 THEN 8 WHEN 13 THEN 12 ELSE k.MODTYPE END AS w,COUNT(0) AS c FROM oastat_kills k WHERE gamenumber = ? GROUP BY w ORDER BY ? "+sord<<gamenumber<<sidx;
+		res = *sql<<"SELECT CASE k.MODTYPE WHEN 5 THEN 4 WHEN 7 THEN 6 WHEN 9 THEN 8 WHEN 13 THEN 12 ELSE k.MODTYPE END AS w,COUNT(0) AS c FROM oastat_kills k WHERE gamenumber = ? GROUP BY w ORDER BY " + order_by + " " + sord<<gamenumber;
 	}
 	response().out() << "{\"rows\":[";
 	bool first = true;

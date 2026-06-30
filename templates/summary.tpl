@@ -64,7 +64,7 @@ $(function () {
 {{/BODY_ELEMENT_LIST}}
 <div id="element" >
 <h2>Kills by weapon</h2>
-<div id="chart_div" style="width:400; height:300"></div>
+<div id="chart_div" style="width:400px; height:300px"></div>
 </div>
 <div id="element" >
 <h2>Kills by weapon</h2>
@@ -80,9 +80,6 @@ $(function () {
 </html>
 
 
-<script language="javascript" type="text/javascript" 
-        src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js">
-    </script>
 
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 <script type="text/javascript">

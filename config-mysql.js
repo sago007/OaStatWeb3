@@ -3,7 +3,8 @@
     // user specific data
     "connection_string" : "mysql:database=oastat;user=testuser;password=password",
     "media_path" : "/media",
-    "static_media" : "/static"
+    "static_media" : "/static",
+    "root_path" : "/oastatweb"
   },
   "service" : {
     "api" : "http",
@@ -16,10 +17,8 @@
     "enable" : true,
     "document_root" : ".",
     "alias" : [
-      { "url" : "/media", "path" : "./media" },
-      { "url" : "/files/media", "path" : "./media" },
-      { "url" : "/static/", "path" : "./static_media" },
-      { "url" : "/files/static/", "path" : "./static_media" },
-    ],
+      { "url" : "/media/", "path" : "./media/" },
+      { "url" : "/static/", "path" : "./static_media/" }
+    ]
   }
 }

@@ -39,11 +39,11 @@ function gametypeFormatter(cellvalue, options, rowObject) {
 }
 
 function gamenumberFormatter(key, options, rowObject) {
-  return '<a href="../game/' + key + '">' + key + "</a>";
+  return '<a href="game/' + key + '">' + key + "</a>";
 }
 
 function mapFormatter(key, options, rowObject) {
-  return '<a href="../map/' + key + '">' + key + "</a>";
+  return '<a href="map/' + key + '">' + key + "</a>";
 }
 
 function timeFormatter(key, options, rowObject) {
@@ -51,7 +51,7 @@ function timeFormatter(key, options, rowObject) {
 }
 
 function playerFormatter(cellvalue, options, rowObject) {
-  return '<a href="../player/' + cellvalue + '">' + rowObject[1] + "</a>";
+  return '<a href="player/' + cellvalue + '">' + rowObject[1] + "</a>";
 }
 
 function weaponFormatter(cellvalue, options, rowObject) {
