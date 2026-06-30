@@ -85,7 +85,17 @@ OaStatWeb3::OaStatWeb3(cppcms::service &srv) : cppcms::application(srv)
 		root_path = env_base_path;
 	}
 	mapper().root(root_path);
-	
+
+	// All links in the templates are resolved against this <base href>, so a
+	// single value drives every URL regardless of how deep the page is or
+	// whether the request had a trailing slash. It must always end in '/'.
+	base_href = root_path;
+	if (base_href.length() == 0 || base_href == "/") {
+		base_href = "/";
+	} else if (base_href.back() != '/') {
+		base_href += "/";
+	}
+
 	static_media = this->settings().get("application.static_media","../static_media");
 	connection_string = this->settings().get("application.connection_string","mysql:database=oastat");
 	//It has become popular to give settings using environments
@@ -147,7 +157,7 @@ void OaStatWeb3::summary() {
 	ctemplate::TemplateDictionary body_tpl("templates/summary.tpl");
 	body_tpl.SetValue("TITLE","Summary page");
 	body_tpl.SetValue("SUBTITLE","OAstat data");
-	body_tpl.SetValue("ROOTPATH",".");
+	body_tpl.SetValue("BASEHREF",base_href);
 	body_tpl.SetValue("STATIC_MEDIA",static_media);
     cppdb::result res = *sql<<"SELECT CASE k.MODTYPE WHEN 5 THEN 4 WHEN 7 THEN 6 WHEN 9 THEN 8 WHEN 13 THEN 12 ELSE k.MODTYPE END AS W,COUNT(0) AS C "
 			"FROM oastat_kills k GROUP BY W ORDER BY C DESC";
@@ -172,7 +182,7 @@ void OaStatWeb3::gamelist(std::string startCount) {
 	ctemplate::TemplateDictionary body_tpl("templates/body.tpl");
 	body_tpl.SetValue("TITLE","Gamelist");
 	body_tpl.SetValue("SUBTITLE","Page");
-	body_tpl.SetValue("ROOTPATH","..");
+	body_tpl.SetValue("BASEHREF",base_href);
 	body_tpl.SetValue("STATIC_MEDIA",static_media);
 	int limitStart = atoi(startCount.c_str());
 	cppdb::result res = *sql<<"SELECT g.gamenumber,g.gametype,g.gametype, g.mapname, g.basegame,g.servername,g.time FROM oastat_games g "
@@ -196,7 +206,7 @@ void OaStatWeb3::gamelist(std::string startCount) {
 	gamelist_stream << "Go to page: <br/>";
 	for (unsigned int i=0;i<=numberOfGames/limitCount;++i) 
 	{
-		gamelist_stream << "<a href='" << url("/gamelist",i*limitCount)  << "'>" << i+1  <<"</a> ";
+		gamelist_stream << "<a href='gamelist/" << i*limitCount  << "'>" << i+1  <<"</a> ";
 	}
 	body_element = body_tpl.AddSectionDictionary("BODY_ELEMENT_LIST");
 	body_element->SetValue("ELEMENT_TITLE","Pages");
@@ -213,7 +223,7 @@ void OaStatWeb3::onegame(std::string gamenumber) {
 	ctemplate::TemplateDictionary body_tpl("templates/body.tpl");
 	body_tpl.SetValue("TITLE","Game summary");
 	body_tpl.SetValue("SUBTITLE","Game - "+gamenumber);
-	body_tpl.SetValue("ROOTPATH","..");
+	body_tpl.SetValue("BASEHREF",base_href);
 	body_tpl.SetValue("STATIC_MEDIA",static_media);
 	cppdb::result res = *sql<<"SELECT p.playerid,p.nickname,s.score FROM oastat_games g, oastat_players p, oastat_points s "
 "WHERE  g.gamenumber = s.gamenumber AND p.playerid = s.player and g.gamenumber = ? "
@@ -242,7 +252,7 @@ void OaStatWeb3::onegame(std::string gamenumber) {
 		stringstream ss;
 		ss << "<div id=\"scoregraph\"></div>";
 		ss << "<script src=\"" << static_media << "/oastat_d3charts.js\"></script>";
-		ss << "<script>renderScoreGraph('#scoregraph', '../datasource/scoregraph?gamenumber=" << sgamenumber << "');</script>";
+		ss << "<script>renderScoreGraph('#scoregraph', 'datasource/scoregraph?gamenumber=" << sgamenumber << "');</script>";
 		ctemplate::TemplateDictionary* score_graph = body_tpl.AddSectionDictionary("BODY_ELEMENT_LIST");
 		score_graph->SetValue("BODY_ELEMENT",ss.str());
 		score_graph->SetValue("ELEMENT_TITLE","Score graph");
@@ -273,7 +283,7 @@ void OaStatWeb3::playerpage(std::string playerid) {
 	ctemplate::TemplateDictionary body_tpl("templates/body.tpl");
 	body_tpl.SetValue("TITLE","Player page");
 	//body_tpl.SetValue("SUBTITLE","Player - "+playerid);
-	body_tpl.SetValue("ROOTPATH","..");
+	body_tpl.SetValue("BASEHREF",base_href);
 	body_tpl.SetValue("STATIC_MEDIA",static_media);
 	cppdb::result res = *sql<<"SELECT lastseen,isbot,model,headmodel,nickname FROM oastat_players WHERE playerid = ?"<<sid;
 	if(res.next()) {
@@ -334,7 +344,7 @@ void OaStatWeb3::mappage(std::string mapname) {
 	ctemplate::TemplateDictionary body_tpl("templates/body.tpl");
 	body_tpl.SetValue("TITLE","Map - " + mapname);
 	body_tpl.SetValue("SUBTITLE","Map summary");
-	body_tpl.SetValue("ROOTPATH","..");
+	body_tpl.SetValue("BASEHREF",base_href);
 	body_tpl.SetValue("STATIC_MEDIA",static_media);
 	string output2 = "";
 	//Map info start
@@ -391,7 +401,7 @@ void OaStatWeb3::gametypepage(std::string gametypeNumber) {
 	ctemplate::TemplateDictionary body_tpl("templates/body.tpl");
 	body_tpl.SetValue("TITLE",oagametype->getValue(gametypeNumber));
 	body_tpl.SetValue("SUBTITLE","Gametype summary");
-	body_tpl.SetValue("ROOTPATH","..");
+	body_tpl.SetValue("BASEHREF",base_href);
 	body_tpl.SetValue("STATIC_MEDIA",static_media);
 	string output2 = "";
 	//last 10 matches - start

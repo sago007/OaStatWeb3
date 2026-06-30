@@ -37,3 +37,8 @@ docker run --rm \
     oastatweb3
 ```
 This will make the instance visible on http://localhost:27960/oastatweb/
+
+`OASTATWEB3_BASE_PATH` also drives the `<base href>` emitted on every page, so all
+links and assets resolve against that prefix regardless of trailing slash or page
+depth. When running behind a reverse proxy, set this to the public path the proxy
+exposes the app under (and have the proxy forward that same prefix to the backend).

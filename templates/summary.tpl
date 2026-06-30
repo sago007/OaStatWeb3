@@ -1,6 +1,7 @@
 {{%AUTOESCAPE context="HTML"}}
 <html>
 <head>
+<base href="{{BASEHREF}}">
 
 <link rel="stylesheet" type="text/css" media="screen" href="{{STATIC_MEDIA}}/css/ui-lightness/jquery-ui-1.10.3.custom.css" />
 <link rel="stylesheet" type="text/css" media="screen" href="{{STATIC_MEDIA}}/css/ui.jqgrid.css" />
@@ -53,7 +54,7 @@ $(function () {
 <H1>{{TITLE}}</H1>
 <H2>{{SUBTITLE}}</H2>
 <div id="topmenu" style="background-color:#FFA500;">
-<a href="{{ROOTPATH}}/.">Summary</a> <a href="{{ROOTPATH}}/gamelist/0">Gamelist</a>
+<a href=".">Summary</a> <a href="gamelist/0">Gamelist</a>
 </div>
 {{#BODY_ELEMENT_LIST}}
 <div id="element" >

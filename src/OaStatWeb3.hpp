@@ -70,6 +70,7 @@ private:
 	optconverter oagametype;
 	std::string connection_string;
 	std::string static_media;
+	std::string base_href;
 };
 
 #endif	/* OASTATWEB_HPP */
